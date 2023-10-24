@@ -1,0 +1,93 @@
+import java.util.Scanner;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+import java.util.HashMap;
+import java.util.Map;
+import java.io.File;
+import java.io.FileNotFoundException;
+
+public class WordCounter {
+    public static void main(String[] args) {
+        Scanner sc= new Scanner(System.in);
+        String inputText = getInputText(sc);
+        sc.close();
+
+        if (inputText != null && !inputText.isEmpty()) {
+            String[] words = splitTextIntoWords(inputText);
+            int wordCount = words.length;
+            System.out.println("Total word count: " + wordCount);
+
+            Map<String, Integer> wordFrequency = calculateWordFrequency(words);
+            System.out.println("Unique word count: " + wordFrequency.size());
+            displayWordFrequency(wordFrequency);
+        } else {
+            System.out.println("No text provided. Exiting.");
+        }
+    }
+
+    public static String getInputText(Scanner sc) {
+        System.out.print("Enter your text or specify a file (or leave empty to exit): ");
+        String input = sc.nextLine();
+
+        if (input.isEmpty()) {
+            return null;
+        } else if (input.startsWith("file:")) {
+            String filePath = input.substring(5);
+            return readTextFromFile(filePath);
+        } else {
+            return input;
+        }
+    }
+
+    public static String[] splitTextIntoWords(String text) {
+        Pattern wordPattern = Pattern.compile("\\b\\w+\\b");
+        Matcher matcher = wordPattern.matcher(text);
+        String[] words = new String[0];
+
+        while (matcher.find()) {
+            String word = matcher.group();
+            words = appendToArray(words, word);
+        }
+
+        return words;
+    }
+
+    public static String[] appendToArray(String[] arr, String element) {
+        String[] newArr = new String[arr.length + 1];
+        System.arraycopy(arr, 0, newArr, 0, arr.length);
+        newArr[arr.length] = element;
+        return newArr;
+    }
+
+    public static Map<String, Integer> calculateWordFrequency(String[] words) {
+        Map<String, Integer> wordFrequency = new HashMap<>();
+
+        for (String word : words) {
+            wordFrequency.put(word, wordFrequency.getOrDefault(word, 0) + 1);
+        }
+
+        return wordFrequency;
+    }
+
+    public static void displayWordFrequency(Map<String, Integer> wordFrequency) {
+        System.out.println("Word Frequency:");
+        for (Map.Entry<String, Integer> entry : wordFrequency.entrySet()) {
+            System.out.println(entry.getKey() + ": " + entry.getValue() + " times");
+        }
+    }
+
+    public static String readTextFromFile(String filePath) {
+        try {
+            StringBuilder content = new StringBuilder();
+            Scanner fileScanner = new Scanner(new File(filePath));
+            while (fileScanner.hasNext()) {
+                content.append(fileScanner.next()).append(" ");
+            }
+            fileScanner.close();
+            return content.toString();
+        } catch (FileNotFoundException e) {
+            System.err.println("File not found: " + filePath);
+            return null;
+        }
+    }
+}
